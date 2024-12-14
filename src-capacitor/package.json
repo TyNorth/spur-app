@@ -1,0 +1,13 @@
+{
+  "name": "spur-app",
+  "version": "0.0.1",
+  "description": "Spur: Discover nearby experiences and make spontaneous plans on the go.",
+  "author": "Tyrone North <tnorthjr@proton.me>",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  }
+}

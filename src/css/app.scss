@@ -1,0 +1,88 @@
+// Import Fonts
+@font-face {
+  font-family: 'Poppins';
+  src: url('./fonts/Poppins/Poppins-Regular.ttf') format('truetype');
+  font-weight: 400; // Regular
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./fonts/Poppins/Poppins-Bold.ttf') format('truetype');
+  font-weight: 700; // Bold
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./fonts/Poppins/Poppins-Light.ttf') format('truetype');
+  font-weight: 300; // Light
+  font-style: normal;
+}
+
+// Global Font Family
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+// Branding Variables
+$color-primary: #2ecc71; // Vibrant Teal
+$color-secondary: #34495e; // Soft Navy
+$color-highlight: #f1c40f; // Sunny Yellow
+$color-danger: #e74c3c; // Bright Coral
+$color-neutral-light: #ecf0f1; // Light Gray
+$color-neutral-dark: #7f8c8d; // Medium Gray
+$color-white: #ffffff; // White
+
+// Typography Variables
+$font-size-base: 16px;
+$font-size-small: 14px;
+$font-size-large: 20px;
+
+$font-weight-regular: 400;
+$font-weight-bold: 700;
+$font-weight-light: 300;
+
+// Spacing Variables
+$spacing-small: 8px;
+$spacing-medium: 16px;
+$spacing-large: 24px;
+
+// Reusable Mixins
+@mixin card-shadow {
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  background-color: $color-white;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Global Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+a {
+  color: $color-primary;
+  text-decoration: none;
+
+  &:hover {
+    color: scale-color($color-primary, $lightness: -10%);
+  }
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

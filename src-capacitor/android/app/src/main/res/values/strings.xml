@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Spur App</string>
+    <string name="title_activity_main">Spur App</string>
+    <string name="package_name">com.goracenorth.spur.app</string>
+    <string name="custom_url_scheme">com.goracenorth.spur.app</string>
+</resources>
