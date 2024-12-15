@@ -68,33 +68,74 @@
     </div>
 
     <!-- Place Details Dialog -->
+    <!-- Place Details Dialog -->
     <q-dialog v-model="detailsDialog" persistent>
       <q-card class="place-details-card">
         <q-card-section>
-          <div class="row items-center">
+          <div class="place-details-header">
             <q-img
               :src="selectedPlace.photoUrl || defaultImage"
               :alt="selectedPlace.name"
               class="place-image"
             />
             <div class="place-info">
-              <h4 class="place-title">{{ selectedPlace.name }}</h4>
+              <h4 class="place-title">{{ selectedPlace.name || 'Place Details' }}</h4>
               <p class="place-subtitle">{{ selectedPlace.formattedAddress }}</p>
+              <p class="place-subtitle" v-if="selectedPlace.nationalPhoneNumber">
+                <q-icon name="phone" color="secondary" /> {{ selectedPlace.nationalPhoneNumber }}
+              </p>
               <p class="place-subtitle" v-if="selectedPlace.rating">
-                Rating: {{ selectedPlace.rating }} ⭐
+                <q-icon name="star" color="amber" /> {{ selectedPlace.rating }} / 5
+              </p>
+              <p class="place-subtitle" v-if="selectedPlace.openNow !== undefined">
+                <q-icon
+                  :name="selectedPlace.openNow ? 'check_circle' : 'cancel'"
+                  :color="selectedPlace.openNow ? 'positive' : 'negative'"
+                />
+                {{ selectedPlace.openNow ? 'Open Now' : 'Closed' }}
               </p>
             </div>
           </div>
+          <div v-if="selectedPlace.openingHours" class="opening-hours">
+            <h6 class="text-subtitle1 text-black text-bold q-mt-md">Opening Hours:</h6>
+            <ul>
+              <li
+                class="text-black"
+                v-for="(hour, index) in selectedPlace.openingHours"
+                :key="index"
+              >
+                {{ hour }}
+              </li>
+            </ul>
+          </div>
+          <div v-if="selectedPlace.websiteUri" class="website-link q-mt-md">
+            <q-btn
+              flat
+              class="full-width"
+              color="secondary"
+              label="Visit Website"
+              :href="selectedPlace.websiteUri"
+              target="_blank"
+            />
+          </div>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="Close" color="secondary" @click="closeDetailsDialog" />
           <q-btn
             flat
-            label="Navigate"
+            icon="sym_o_location_on"
             color="secondary"
-            :href="openGoogleMaps(selectedPlace)"
-            target="_blank"
+            @click="openGoogleMaps"
+            aria-label="Navigate"
           />
+          <q-btn
+            v-if="selectedPlace.nationalPhoneNumber"
+            flat
+            icon="sym_o_phone"
+            color="secondary"
+            @click="makePhoneCall"
+            aria-label="Call"
+          />
+          <q-btn flat icon="sym_o_close" color="accent" @click="closeDetailsDialog" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -147,6 +188,36 @@ const selectSuggestion = (suggestion) => {
   performSearch()
 }
 
+const makePhoneCall = async () => {
+  const phoneNumber = selectedPlace.value.nationalPhoneNumber
+  if (!phoneNumber) {
+    $q.notify({
+      type: 'negative',
+      message: 'Phone number not available.',
+    })
+    return
+  }
+
+  const telUrl = `tel:${phoneNumber}`
+  try {
+    const { value } = await AppLauncher.canOpenUrl({ url: telUrl })
+    if (value) {
+      await AppLauncher.openUrl({ url: telUrl })
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: 'Unable to open the phone app.',
+      })
+    }
+  } catch (error) {
+    console.error('Error launching phone app:', error)
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to make the phone call.',
+    })
+  }
+}
+
 // Perform search
 const performSearch = async () => {
   if (!searchQuery.value) {
@@ -166,6 +237,7 @@ const performSearch = async () => {
       radius: 500,
     }
     places.value = await textSearch(searchQuery.value, locationBias)
+    console.log('places:', places.value)
 
     for (const place of places.value) {
       if (place.photos) {
@@ -198,7 +270,18 @@ const performSearch = async () => {
 
 // View details of a place
 const viewDetails = (place) => {
-  selectedPlace.value = place
+  selectedPlace.value = {
+    name: place.name,
+    formattedAddress: place.formattedAddress,
+    rating: place.rating,
+    openingHours: place.openingHours?.weekdayDescriptions || [],
+    websiteUri: place.websiteUri,
+    googleMapsUri: place.googleMapsUri,
+    openNow: place.openingHours?.openNow,
+    nationalPhoneNumber: place.nationalPhoneNumber,
+    photoUrl: place.photoUrl || defaultImage,
+  }
+  console.log('Selected Place Details:', selectedPlace.value)
   detailsDialog.value = true
 }
 
@@ -209,9 +292,7 @@ const closeDetailsDialog = () => {
 
 // Generate and open Google Maps link using Capacitor AppLauncher
 const openGoogleMaps = async () => {
-  const { latitude, longitude } = selectedPlace.value.location
-  console.log(latitude, longitude)
-  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`
+  const mapsUrl = selectedPlace.value.googleMapsUri
 
   try {
     const { value } = await AppLauncher.canOpenUrl({ url: mapsUrl })
@@ -233,7 +314,11 @@ const openGoogleMaps = async () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.grid {
+  display: grid;
+  place-items: center;
+}
 .search-nearby-page {
   display: flex;
   flex-direction: column;
@@ -323,8 +408,40 @@ const openGoogleMaps = async () => {
   color: #666;
 }
 
-.grid {
-  display: grid;
-  place-items: center;
+.place-details-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.place-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 16px;
+}
+
+.place-info {
+  flex-grow: 1;
+}
+
+.opening-hours ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.opening-hours li {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.website-link {
+  margin-top: 16px;
+}
+
+.q-card {
+  max-width: 500px;
 }
 </style>
