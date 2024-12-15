@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { supabase } from 'src/boot/supabase'
 import { useAuthStore } from 'src/stores/useAuthStore'
+import { fetchNearbySuggestions } from '../api/fetchNearbySuggestions'
 
 const authStore = useAuthStore()
 
@@ -14,7 +15,21 @@ export const useSuggestionsStore = defineStore('suggestions', {
   actions: {
     // Fetch suggestions from the database
     // Fetch suggestions from the database
-    async fetchSuggestions() {
+    async fetchSuggestions(location, activityTypes) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const suggestions = await fetchNearbySuggestions(location, activityTypes)
+        this.suggestions = suggestions
+      } catch (error) {
+        this.error = error.message
+        console.error('Error fetching suggestions:', error.message)
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchSuggestions2() {
       this.loading = true
       this.error = null
 

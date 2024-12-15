@@ -19,6 +19,16 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [{ path: '', component: () => import('pages/ProfilePage.vue') }],
   },
+  {
+    path: '/favorites',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('src/pages/FavoritesPage.vue') }],
+  },
+  {
+    path: '/search',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('src/pages/SearchNearbyPage.vue') }],
+  },
 
   // Always leave this as last one,
   // but you can also remove it

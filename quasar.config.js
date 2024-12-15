@@ -12,7 +12,7 @@ export default defineConfig((ctx) => {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['i18n', 'axios'],
+    boot: ['i18n', 'axios', 'supabase', 'uuid'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
     css: ['app.scss'],
@@ -52,6 +52,10 @@ export default defineConfig((ctx) => {
         SUPABASE_URL: 'https://djdqfnnwfhohfgviuktd.supabase.co',
         SUPABASE_KEY:
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqZHFmbm53ZmhvaGZndml1a3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQxNDg2NTUsImV4cCI6MjA0OTcyNDY1NX0.KChlBqtnox7GSSNZU6MqMo6NV-fHS4jARGW-sSgE69w',
+        MAPBOX_ACCESS_TOKEN:
+          'sk.eyJ1Ijoic2ltZGV2MjAwMCIsImEiOiJjbTRvaGRjdXQwam4yMmtwejgzcTh5dzd5In0.ZxylTZCONXeV2K7ZPY7C7Q',
+        GOOGLE_PLACES_API_KEY: 'AIzaSyBCWVS5wRGhXErOcydi1EWkbHRMF_Y89nw',
+        GOOGEL_API_KEY: 'AIzaSyBCWVS5wRGhXErOcydi1EWkbHRMF_Y89nw',
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

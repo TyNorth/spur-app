@@ -12,8 +12,7 @@
           :max="100"
           step="10"
           class="mood-slider"
-          @change="updateMood"
-          :value="Number(moodValue) || 50"
+          @change="updateSuggestions"
         >
           <template v-slot:label="props">
             <div class="slider-label">
@@ -27,21 +26,31 @@
       <div class="suggestions-container">
         <q-card
           v-for="suggestion in filteredSuggestions"
-          :key="suggestion.id"
+          :key="suggestion.place_id"
           class="suggestion-card"
         >
-          <q-img :src="suggestion.image_url" alt="suggestion.title" class="card-image" />
+          <q-img :src="suggestion.photoUrl" :alt="suggestion.name" class="card-image" />
           <q-card-section>
-            <div class="card-title">{{ suggestion.title }}</div>
-            <div class="card-description">{{ suggestion.description }}</div>
+            <div class="card-title">{{ suggestion.name }}</div>
+            <div class="card-description" v-if="suggestion.businessStatus">OPEN</div>
+            <div class="card-description" v-else>{{ suggestion.businessStatus }}</div>
           </q-card-section>
           <q-card-actions align="right">
-            <q-btn flat label="View Details" color="primary" @click="navigateTo(suggestion)" />
+            <q-btn flat label="View Details" color="secondary" @click="navigateTo(suggestion)" />
             <q-btn
               flat
               icon="bookmark"
+              :color="favoritesStore.isFavorite(suggestion) ? 'primary' : 'grey'"
               aria-label="Save Suggestion"
               @click="bookmarkSuggestion(suggestion)"
+            />
+            <!-- Navigation Button -->
+            <q-btn
+              flat
+              icon="navigation"
+              color="secondary"
+              aria-label="Navigate to Location"
+              @click="launchMapsNavigation(suggestion)"
             />
           </q-card-actions>
         </q-card>
@@ -55,46 +64,55 @@ import { ref, computed, onMounted } from 'vue'
 import { useSuggestionsStore } from 'src/features/suggestions/store/useSuggestionsStore'
 import { getCurrentPosition } from 'src/features/shared/utils/geolocation'
 import { useQuasar } from 'quasar'
-import { useAuthStore } from 'src/stores/useAuthStore'
 import { fetchNearbySuggestions } from 'src/features/suggestions/api/fetchNearbySuggestions'
-
 import { activityTypesByMood } from 'src/features/suggestions/utils/activityTypesMapper'
+import { useFavoritesStore } from 'src/stores/useFavoritesStore'
+import { AppLauncher } from '@capacitor/app-launcher'
 
 const $q = useQuasar()
 
 const moodValue = ref(50) // Default mood value
-
-const loading = ref(true) // Tracks loading state
+const loading = ref(true) // Loading state for the page
 const suggestionsStore = useSuggestionsStore()
+const favoritesStore = useFavoritesStore()
 
-const authStore = useAuthStore()
-
-// Filter suggestions dynamically based on mood and other criteria
-const filteredSuggestions = computed(() => {
-  return suggestionsStore.suggestions.filter((s) => {
-    if (moodValue.value < 30) return s.category === 'relaxing'
-    if (moodValue.value < 70) return s.category === 'focused'
-    return s.category === 'adventurous'
-  })
-})
-console.log('f', filteredSuggestions.value)
+// Mood ranges and labels
+const moodRanges = [
+  { min: 0, max: 29, label: 'Relaxed' },
+  { min: 30, max: 59, label: 'Focused' },
+  { min: 60, max: 79, label: 'Adventurous' },
+  { min: 80, max: 89, label: 'Excited' },
+  { min: 90, max: 100, label: 'Energetic' },
+]
 
 // Get mood label based on slider value
 const getMoodLabel = (value) => {
-  if (value < 30) return 'Relaxed'
-  if (value < 70) return 'Focused'
-  return 'Adventurous'
+  const mood = moodRanges.find((range) => value >= range.min && value <= range.max)
+  return mood ? mood.label : 'Unknown'
 }
 
-// Fetch suggestions on page load with location
-const loadSuggestions = async () => {
+// Filtered suggestions for UI
+const filteredSuggestions = computed(() => suggestionsStore.suggestions)
+
+// Update suggestions based on mood and location
+const updateSuggestions = async () => {
   try {
+    loading.value = true
     const location = await getCurrentPosition()
-    console.log('User location:', location)
-    const data = await suggestionsStore.fetchSuggestions({
-      location: location, // Pass location to the fetch logic
-    })
-    console.log(data)
+    const moodLabel = getMoodLabel(moodValue.value)
+    const activityType = activityTypesByMood[moodLabel]
+
+    if (!activityType) {
+      console.warn(`No activity type found for mood: ${moodLabel}`)
+      return
+    }
+
+    const suggestions = await fetchNearbySuggestions(location, activityType)
+    console.log('suggestions from server: ', suggestions)
+    // Add a `photoUrl` field for images
+
+    suggestionsStore.setSuggestions(suggestions)
+    console.log('Suggestions fetched:', suggestions)
   } catch (error) {
     console.error('Error fetching suggestions:', error.message)
     $q.notify({ type: 'negative', message: 'Failed to load suggestions. Please try again.' })
@@ -103,40 +121,57 @@ const loadSuggestions = async () => {
   }
 }
 
-const updateSuggestions = async () => {
-  loading.value = true
-  const location = await getCurrentPosition()
-  const moodLabel =
-    moodValue.value < 30 ? 'Relaxed' : moodValue.value < 70 ? 'Focused' : 'Adventurous'
-  const suggestions = await fetchNearbySuggestions(location, activityTypesByMood[moodLabel])
-  suggestionsStore.setSuggestions(suggestions)
-  loading.value = false
-}
-
-// Fetch data when the component is mounted
-onMounted(() => {
-  updateSuggestions()
-  loadSuggestions()
-  console.log(authStore.user)
-})
-
-// Update mood filter
-const updateMood = () => {
-  moodValue.value = Number(moodValue.value) // Ensure it is always a number
-  console.log('Mood updated:', moodValue.value)
-}
-
-// Navigate to suggestion details (placeholder logic)
+// Navigate to suggestion details
 const navigateTo = (suggestion) => {
-  console.log('Navigating to:', suggestion.title)
-  // Logic for navigation
+  console.log('Navigating to:', suggestion.name)
 }
 
 // Bookmark a suggestion
 const bookmarkSuggestion = (suggestion) => {
-  console.log('Bookmarked:', suggestion.title)
-  $q.notify({ type: 'positive', message: `Saved "${suggestion.title}" to favorites.` })
+  if (favoritesStore.isFavorite(suggestion)) {
+    favoritesStore.removeFavorite(suggestion)
+    $q.notify({
+      type: 'negative',
+      message: `Removed "${suggestion.name}" from favorites.`,
+    })
+  } else {
+    favoritesStore.addFavorite(suggestion)
+    $q.notify({
+      type: 'positive',
+      message: `Saved "${suggestion.name}" to favorites.`,
+    })
+  }
 }
+
+const launchMapsNavigation = async (suggestion) => {
+  const latitude = suggestion.location.latitude
+  const longitude = suggestion.location.longitude
+
+  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`
+
+  try {
+    const { value } = await AppLauncher.canOpenUrl({ url: mapsUrl })
+    if (value) {
+      await AppLauncher.openUrl({ url: mapsUrl })
+    } else {
+      console.error('Cannot open Google Maps.')
+      $q.notify({
+        type: 'negative',
+        message: 'Unable to open Google Maps.',
+      })
+    }
+  } catch (error) {
+    console.error('Error launching Google Maps:', error)
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to launch navigation.',
+    })
+  }
+}
+// Fetch suggestions when the component is mounted
+onMounted(() => {
+  updateSuggestions()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -174,7 +209,6 @@ const bookmarkSuggestion = (suggestion) => {
 }
 
 .suggestion-card {
-  background-color: black;
   width: 300px;
   @include card-shadow;
 

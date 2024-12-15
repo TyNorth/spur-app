@@ -20,11 +20,11 @@
     </q-page-container>
 
     <!-- Footer -->
-    <q-footer elevated class="bg-secondary text-white">
+    <q-footer elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn flat round icon="home" aria-label="Home" to="/home" />
-        <q-btn flat round icon="favorite" aria-label="Favorites" />
-        <q-btn flat round icon="search" aria-label="Search" />
+        <q-btn flat round icon="favorite" aria-label="Favorites" to="/favorites" />
+        <q-btn flat round icon="search" aria-label="Search" to="/search" />
       </q-toolbar>
     </q-footer>
   </q-layout>

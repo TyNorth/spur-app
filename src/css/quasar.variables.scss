@@ -65,14 +65,6 @@ body {
   text-align: center;
   cursor: pointer;
   transition: background-color 0.2s;
-
-  &:hover {
-    background-color: darken($primary, 10%);
-  }
-
-  &:active {
-    background-color: lighten($primary, 5%);
-  }
 }
 
 @mixin card-style {
@@ -91,16 +83,8 @@ body {
   background-color: $primary;
   color: $color-white;
 
-  &:hover {
-    background-color: darken($primary, 10%);
-  }
-
   &--secondary {
     background-color: $secondary;
     color: $color-white;
-
-    &:hover {
-      background-color: lighten($secondary, 5%);
-    }
   }
 }
