@@ -13,7 +13,7 @@
       :loading="loading"
     >
       <template v-slot:append>
-        <q-icon name="search" @click="performSearch" />
+        <q-icon name="search" class="icon-clickable" @click="performSearch" />
       </template>
     </q-input>
 
@@ -24,6 +24,7 @@
         :key="suggestion.placePrediction.placeId"
         clickable
         tag="div"
+        class="suggestion-item"
         @click="selectSuggestion(suggestion)"
       >
         <q-item-section>
@@ -50,36 +51,75 @@
             <q-img :src="place.photoUrl || defaultImage" :alt="place.name" class="result-image" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>{{ place.name }}</q-item-label>
-            <q-item-label caption>{{ place.formattedAddress }}</q-item-label>
-            <q-item-label caption v-if="place.rating"> Rating: {{ place.rating }} ⭐ </q-item-label>
+            <q-item-label class="place-name">{{ place.name }}</q-item-label>
+            <q-item-label caption class="place-address">{{ place.formattedAddress }}</q-item-label>
+            <q-item-label caption class="place-rating" v-if="place.rating">
+              Rating: {{ place.rating }} ⭐
+            </q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
     </div>
 
     <!-- Empty State -->
-    <div v-if="!loading && places.length === 0" class="empty-state">
+    <div v-if="!loading && places.length === 0" class="empty-state grid">
       <q-icon name="place" size="100px" color="grey-5" />
       <p>No results found. Try a different search.</p>
     </div>
+
+    <!-- Place Details Dialog -->
+    <q-dialog v-model="detailsDialog" persistent>
+      <q-card class="place-details-card">
+        <q-card-section>
+          <div class="row items-center">
+            <q-img
+              :src="selectedPlace.photoUrl || defaultImage"
+              :alt="selectedPlace.name"
+              class="place-image"
+            />
+            <div class="place-info">
+              <h4 class="place-title">{{ selectedPlace.name }}</h4>
+              <p class="place-subtitle">{{ selectedPlace.formattedAddress }}</p>
+              <p class="place-subtitle" v-if="selectedPlace.rating">
+                Rating: {{ selectedPlace.rating }} ⭐
+              </p>
+            </div>
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="secondary" @click="closeDetailsDialog" />
+          <q-btn
+            flat
+            label="Navigate"
+            color="secondary"
+            :href="openGoogleMaps(selectedPlace)"
+            target="_blank"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-
+import { getCurrentPosition } from 'src/features/shared/utils/geolocation'
 import googlePlacesApi from 'src/features/suggestions/api/googlePlacesApi'
+import { AppLauncher } from '@capacitor/app-launcher'
 
 const $q = useQuasar()
 
-const { autocompleteSearch, textSearch } = googlePlacesApi // Data
+const { autocompleteSearch, textSearch, fetchPlacePhoto } = googlePlacesApi
 const searchQuery = ref('')
 const autocompleteSuggestions = ref([])
 const places = ref([])
 const loading = ref(false)
 const defaultImage = 'https://via.placeholder.com/150?text=No+Image'
+
+// Dialog state and selected place
+const detailsDialog = ref(false)
+const selectedPlace = ref({})
 
 // Fetch autocomplete suggestions
 const fetchAutocompleteSuggestions = async () => {
@@ -89,7 +129,7 @@ const fetchAutocompleteSuggestions = async () => {
   }
 
   try {
-    const locationBias = { latitude: 37.7749, longitude: -122.4194, radius: 5000 } // Replace with actual location
+    const locationBias = { latitude: 37.7749, longitude: -122.4194, radius: 5000 }
     autocompleteSuggestions.value = await autocompleteSearch(searchQuery.value, locationBias)
   } catch (error) {
     console.error('Error fetching autocomplete suggestions:', error)
@@ -107,7 +147,7 @@ const selectSuggestion = (suggestion) => {
   performSearch()
 }
 
-// Perform search using the Text Search API
+// Perform search
 const performSearch = async () => {
   if (!searchQuery.value) {
     $q.notify({
@@ -117,10 +157,29 @@ const performSearch = async () => {
     return
   }
 
+  const currentPosition = await getCurrentPosition()
   loading.value = true
   try {
-    const locationBias = { latitude: 37.7749, longitude: -122.4194, radius: 5000 } // Replace with actual location
+    const locationBias = {
+      latitude: currentPosition.latitude,
+      longitude: currentPosition.longitude,
+      radius: 500,
+    }
     places.value = await textSearch(searchQuery.value, locationBias)
+
+    for (const place of places.value) {
+      if (place.photos) {
+        try {
+          const photoResponse = await fetchPlacePhoto(place.photos[0].name)
+          place.photoUrl = photoResponse
+        } catch (photoError) {
+          console.error(`Error fetching photo for place ${place.id}:`, photoError)
+          place.photoUrl = defaultImage
+        }
+      } else {
+        place.photoUrl = defaultImage
+      }
+    }
 
     $q.notify({
       type: 'positive',
@@ -139,73 +198,133 @@ const performSearch = async () => {
 
 // View details of a place
 const viewDetails = (place) => {
-  console.log('Viewing details for:', place)
-  // Navigate to place details page or open a modal
+  selectedPlace.value = place
+  detailsDialog.value = true
+}
+
+// Close details dialog
+const closeDetailsDialog = () => {
+  detailsDialog.value = false
+}
+
+// Generate and open Google Maps link using Capacitor AppLauncher
+const openGoogleMaps = async () => {
+  const { latitude, longitude } = selectedPlace.value.location
+  console.log(latitude, longitude)
+  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`
+
+  try {
+    const { value } = await AppLauncher.canOpenUrl({ url: mapsUrl })
+    if (value) {
+      await AppLauncher.openUrl({ url: mapsUrl })
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: 'Unable to open Google Maps app.',
+      })
+    }
+  } catch (error) {
+    console.error('Error launching Google Maps:', error)
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to launch navigation.',
+    })
+  }
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .search-nearby-page {
   display: flex;
   flex-direction: column;
-  padding: $spacing-medium;
-  background: $color-neutral-light;
+  padding: 16px;
+  background-color: #f5f5f5;
 }
 
 /* Search Bar */
 .search-bar {
-  margin-bottom: $spacing-medium;
+  margin-bottom: 16px;
   width: 100%;
 }
 
-/* Autocomplete List */
+.icon-clickable {
+  cursor: pointer;
+  color: #0056b3;
+}
+
 .autocomplete-list {
   background: white;
-  margin-bottom: $spacing-small;
-  border: 1px solid $color-neutral-dark;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
   border-radius: 8px;
 }
 
 /* Results List */
 .results-list {
-  margin-top: $spacing-small;
+  margin-top: 8px;
   padding: 0;
 }
 
 .result-item {
-  padding: $spacing-small;
-  border: 1px solid $color-neutral-dark;
+  padding: 12px;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  margin-bottom: $spacing-small;
-
-  .result-image {
-    width: 50px;
-    height: 50px;
-    border-radius: 8px;
-    object-fit: cover;
-  }
+  margin-bottom: 8px;
+  background-color: white;
+  transition: box-shadow 0.3s;
 }
 
-/* Loading Container */
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+.result-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Empty State */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  text-align: center;
-  color: $color-neutral-dark;
+.result-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+}
 
-  p {
-    margin-top: $spacing-small;
-  }
+.place-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.place-address {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.place-rating {
+  font-size: 0.875rem;
+  color: #007bff;
+}
+
+.place-details-card {
+  max-width: 500px;
+  background-color: #ffffff;
+}
+
+.place-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  margin-right: 16px;
+}
+
+.place-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.place-subtitle {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.grid {
+  display: grid;
+  place-items: center;
 }
 </style>

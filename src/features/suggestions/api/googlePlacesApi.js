@@ -25,6 +25,25 @@ export const fetchGooglePlaces = async ({ latitude, longitude, activityTypes }) 
 }
 
 /**
+ * Fetch a place photo via backend API.
+ * @param {string} photoName - The name of the photo.
+ * @param {number} maxWidth - Maximum width of the photo.
+ * @param {number} maxHeight - Maximum height of the photo.
+ * @returns {Promise<string>} - URL of the fetched photo.
+ */
+export const fetchPlacePhoto = async (photoName, maxWidth = 400, maxHeight = 400) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/photo`, {
+      params: { photoName, maxWidth, maxHeight },
+    })
+    return response.data.photoUrl // Assume backend returns { photoUrl }
+  } catch (error) {
+    console.error('Error fetching place photo:', error.message)
+    throw error
+  }
+}
+
+/**
  * Fetch detailed information about a place via backend API.
  * @param {string} placeId - The unique identifier for the place.
  * @param {string[]} fields - Array of fields to include in the response.
@@ -93,4 +112,5 @@ export default {
   fetchPlaceDetails,
   autocompleteSearch,
   textSearch,
+  fetchPlacePhoto,
 }
