@@ -40,7 +40,7 @@
             <q-btn
               flat
               icon="bookmark"
-              :color="favoritesStore.isFavorite(suggestion) ? 'primary' : 'grey'"
+              :color="favoritesStore.isFavorite(suggestion) ? 'accent' : 'secondary'"
               aria-label="Save Suggestion"
               @click="bookmarkSuggestion(suggestion)"
             />
