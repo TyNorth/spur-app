@@ -145,6 +145,10 @@ export default defineConfig((ctx) => {
       'fadeOutUp',
       'fadeOutRight',
       'fadeOutLeft',
+      'slideInUp',
+      'slideInDown',
+      'slideOutDown',
+      'slideOutUp',
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#sourcefiles

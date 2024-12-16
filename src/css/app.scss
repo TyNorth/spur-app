@@ -25,40 +25,72 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
-// Branding Variables
-$color-primary: #2ecc71; // Vibrant Teal
-$color-secondary: #34495e; // Soft Navy
-$color-highlight: #f1c40f; // Sunny Yellow
-$color-danger: #e74c3c; // Bright Coral
-$color-neutral-light: #ecf0f1; // Light Gray
-$color-neutral-dark: #7f8c8d; // Medium Gray
-$color-white: #ffffff; // White
+// Core Colors (Branding + Theme)
+$primary: #4c8bf5; // Material You-inspired vibrant blue
+$secondary: #1a1a2e; // Deep navy for contrast
+$accent: #ffb74d; // Warm accent color
+$background: rgba(245, 245, 245, 0.8); // Translucent light background
+$glass-overlay: rgba(255, 255, 255, 0.3); // Glassmorphic overlay effect
+$dark: #121212; // Dark mode background
+$dark-overlay: rgba(18, 18, 18, 0.8); // Translucent dark overlay
 
 // Typography Variables
-$font-size-base: 16px;
 $font-size-small: 14px;
+$font-size-base: 16px;
 $font-size-large: 20px;
-
+$font-weight-light: 300;
 $font-weight-regular: 400;
 $font-weight-bold: 700;
-$font-weight-light: 300;
 
 // Spacing Variables
 $spacing-small: 8px;
 $spacing-medium: 16px;
 $spacing-large: 24px;
 
-// Reusable Mixins
-@mixin card-shadow {
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  background-color: $color-white;
+// Shadows and Borders
+$border-radius-small: 8px;
+$border-radius-medium: 12px;
+$border-radius-large: 16px;
+
+$shadow-light: 0px 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-medium: 0px 8px 12px rgba(0, 0, 0, 0.15);
+$shadow-dark: 0px 12px 16px rgba(0, 0, 0, 0.2);
+
+// Mixins
+@mixin glass-effect($color, $blur: 15px, $opacity: 0.3) {
+  background: $color;
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, $opacity);
+  border-radius: $border-radius-medium;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@mixin card-shadow {
+  box-shadow: $shadow-light;
+  border-radius: $border-radius-medium;
+  background-color: $background;
+}
+
+@mixin button-primary {
+  background-color: $primary;
+  color: $color-white;
+  font-family: 'Poppins', sans-serif;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  padding: $spacing-medium;
+  border-radius: $border-radius-small;
+  border: 1px solid $primary;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    background-color: darken($primary, 10%);
+    transform: scale(1.02);
+  }
 }
 
 // Global Styles
@@ -68,21 +100,144 @@ $spacing-large: 24px;
   box-sizing: border-box;
 }
 
+body {
+  font-family: 'Poppins', sans-serif;
+  background: $background;
+  color: $dark;
+
+  &[data-theme='dark'] {
+    background: $dark;
+    color: $color-white;
+  }
+}
+
 a {
-  color: $color-primary;
+  color: $primary;
   text-decoration: none;
 
   &:hover {
-    color: scale-color($color-primary, $lightness: -10%);
+    color: darken($primary, 10%);
   }
 }
 
 button {
   font-family: inherit;
-  border: none;
   cursor: pointer;
+  transition: all 0.2s;
 
   &:hover {
     opacity: 0.9;
+  }
+}
+
+// Cards
+.q-card {
+  @include card-shadow;
+  padding: $spacing-medium;
+
+  &[data-theme='dark'] {
+    background: $dark-overlay;
+    box-shadow: $shadow-dark;
+  }
+}
+
+.card {
+  @include card-shadow;
+  padding: $spacing-medium; // Adds spacing inside the card
+  font-family: $font-family-main; // Ensures consistent font
+  font-size: $font-size-base; // Sets default text size
+  color: $color-neutral-dark; // Text color for readability
+}
+
+// Buttons
+.q-btn {
+  font-family: 'Poppins', sans-serif;
+  font-weight: $font-weight-bold;
+  border-radius: $border-radius-small;
+  padding: $spacing-small $spacing-medium;
+  text-align: center;
+  cursor: pointer;
+
+  &.q-btn--primary {
+    background-color: $primary;
+    color: #fff;
+
+    &:hover {
+      background-color: darken($primary, 10%);
+    }
+  }
+
+  &.q-btn--secondary {
+    background-color: $secondary;
+    color: #fff;
+
+    &:hover {
+      background-color: lighten($secondary, 10%);
+    }
+  }
+}
+
+// Inputs
+.q-input {
+  border-radius: $border-radius-small;
+  background: $glass-overlay;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: $dark;
+
+  &[data-theme='dark'] {
+    background: rgba(0, 0, 0, 0.3);
+    color: $color-white;
+  }
+
+  input {
+    font-family: $font-family-main;
+    font-size: $font-size-base;
+  }
+}
+
+// Dialogs
+.q-dialog {
+  background: $background;
+  border-radius: $border-radius-large;
+  box-shadow: $shadow-medium;
+  padding: $spacing-large;
+
+  &[data-theme='dark'] {
+    background: $dark-overlay;
+    box-shadow: $shadow-dark;
+  }
+}
+
+// Carousel
+.q-carousel {
+  background: transparent;
+  border-radius: $border-radius-large;
+
+  .q-carousel-slide {
+    border-radius: $border-radius-medium;
+    overflow: hidden;
+
+    img {
+      object-fit: cover;
+      height: 100%;
+    }
+  }
+
+  &[data-theme='dark'] {
+    .q-carousel-slide {
+      background: $dark-overlay;
+    }
+  }
+}
+
+// Miscellaneous
+.q-page {
+  background: $background;
+  padding: $spacing-large;
+
+  &[data-theme='dark'] {
+    background: $dark;
   }
 }

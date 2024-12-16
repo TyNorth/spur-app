@@ -24,6 +24,24 @@
 
       <!-- Suggestion Cards -->
       <div class="suggestions-container">
+        <div v-if="filteredSuggestions.length === 0" class="no-suggestions">
+          <q-card class="fallback-card">
+            <q-card-section>
+              <div class="text-h6 text-center">No places found nearby</div>
+              <p class="text-center">
+                Try selecting another mood or adjusting your location settings.
+              </p>
+              <q-btn
+                label="Retry"
+                color="primary"
+                flat
+                @click="updateSuggestions"
+                class="retry-button"
+              />
+            </q-card-section>
+          </q-card>
+        </div>
+
         <q-card
           v-for="suggestion in filteredSuggestions"
           :key="suggestion.place_id"
@@ -36,43 +54,60 @@
             <div class="card-description" v-else>{{ suggestion.businessStatus }}</div>
           </q-card-section>
           <q-card-actions align="right">
-            <q-btn
-              flat
-              icon="sym_o_info"
-              aria-label="View Details"
-              color="secondary"
-              @click="navigateTo(suggestion)"
-            />
-            <q-btn
-              flat
-              icon="sym_o_bookmark"
-              :color="favoritesStore.isFavorite(suggestion) ? 'accent' : 'secondary'"
-              aria-label="Save Suggestion"
-              @click="bookmarkSuggestion(suggestion)"
-            />
-            <q-btn
-              v-if="suggestion.nationalPhoneNumber"
-              flat
-              icon="sym_o_phone"
-              color="secondary"
-              @click="makePhoneCall"
-              aria-label="Call"
-            />
-            <!-- Navigation Button -->
-            <q-btn
-              flat
-              icon="sym_o_navigation"
-              color="secondary"
-              aria-label="Navigate to Location"
-              @click="launchMapsNavigation(suggestion)"
-            />
+            <div class="row">
+              <q-btn
+                flat
+                dense
+                class="col"
+                icon="sym_o_info"
+                aria-label="View Details"
+                color="secondary"
+                @click="navigateTo(suggestion)"
+              />
+              <q-btn
+                flat
+                class="col"
+                dense
+                icon="sym_o_heart_plus"
+                :color="favoritesStore.isFavorite(suggestion) ? 'accent' : 'secondary'"
+                aria-label="Save Suggestion"
+                @click="bookmarkSuggestion(suggestion)"
+              />
+              <q-btn
+                v-if="suggestion.nationalPhoneNumber"
+                flat
+                dense
+                class="col"
+                icon="sym_o_phone"
+                color="secondary"
+                @click="makePhoneCall"
+                aria-label="Call"
+              />
+              <!-- Navigation Button -->
+              <q-btn
+                flat
+                dense
+                class="col"
+                icon="sym_o_navigation"
+                color="secondary"
+                aria-label="Navigate to Location"
+                @click="launchMapsNavigation(suggestion)"
+              />
+            </div>
           </q-card-actions>
         </q-card>
       </div>
     </div>
 
-    <q-dialog v-model="detailsDialogVisible" persistent>
-      <q-card class="q-pa-md text-secondary" style="width: 400px">
+    <q-dialog
+      class="detailsDialog"
+      v-model="detailsDialogVisible"
+      persistent
+      :maximized="maximizedToggle"
+      transition-show="slide-up"
+      transition-hide="slide-down"
+    >
+      <q-card class="q-pa-md text-secondary" style="width: 475px">
         <q-card-section>
           <div class="text-h6">{{ selectedPlace?.name || 'Place Details' }}</div>
           <q-carousel
@@ -113,9 +148,8 @@
           <div v-if="selectedPlace?.websiteUri" class="q-mt-md">
             <q-btn
               class="full-width"
-              flat
               color="secondary"
-              label="Vist Website"
+              label="Visit Website"
               :href="selectedPlace.websiteUri"
               target="_blank"
             />
@@ -156,7 +190,7 @@ import { useSuggestionsStore } from 'src/features/suggestions/store/useSuggestio
 import { getCurrentPosition } from 'src/features/shared/utils/geolocation'
 import { useQuasar } from 'quasar'
 import { fetchNearbySuggestions } from 'src/features/suggestions/api/fetchNearbySuggestions'
-import { activityTypesByMood } from 'src/features/suggestions/utils/activityTypesMapper'
+import { getActivityByMood } from 'src/features/suggestions/utils/activityTypesMapper'
 import { useFavoritesStore } from 'src/stores/useFavoritesStore'
 import { AppLauncher } from '@capacitor/app-launcher'
 import axios from 'axios'
@@ -173,6 +207,8 @@ const detailsDialogVisible = ref(false) // Controls dialog visibility
 const selectedPlace = ref(null) // Holds details of the selected place
 
 const carouselIndex = ref(0) // Tracks the current carousel index
+
+const maximizedToggle = ref(true)
 
 const makePhoneCall = async () => {
   const phoneNumber = selectedPlace.value.nationalPhoneNumber
@@ -227,16 +263,16 @@ const updateSuggestions = async () => {
     loading.value = true
     const location = await getCurrentPosition()
     const moodLabel = getMoodLabel(moodValue.value)
-    const activityType = activityTypesByMood[moodLabel]
+    const activityType = getActivityByMood(moodLabel) // Pull only the first activity for the mood
 
     if (!activityType) {
       console.warn(`No activity type found for mood: ${moodLabel}`)
       return
     }
 
-    const suggestions = await fetchNearbySuggestions(location, activityType)
-    // Add a `photoUrl` field for images
+    console.log(`Fetching suggestions for mood: "${moodLabel}" and activity: "${activityType}"`)
 
+    const suggestions = await fetchNearbySuggestions(location, activityType)
     suggestionsStore.setSuggestions(suggestions)
     console.log('Suggestions fetched:', suggestions)
   } catch (error) {
@@ -398,7 +434,7 @@ onMounted(() => {
 }
 
 .suggestion-card {
-  width: 300px;
+  width: 375px;
   @include card-shadow;
 
   .card-image {
@@ -421,6 +457,27 @@ onMounted(() => {
     margin-bottom: $spacing-medium;
   }
 }
+
+.no-suggestions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 300px; // Adjust height as needed
+}
+
+.fallback-card {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 16px;
+  text-align: center;
+  @include card-shadow;
+}
+
+.retry-button {
+  margin-top: 16px;
+}
+
 .q-mt-md {
   margin-top: 16px;
 }
@@ -438,5 +495,9 @@ onMounted(() => {
   max-height: 200px;
   width: 100%;
   object-fit: cover;
+}
+
+.detailsDialog {
+  width: 375px;
 }
 </style>

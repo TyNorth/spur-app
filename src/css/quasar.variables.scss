@@ -1,59 +1,74 @@
-// Quasar SCSS (& Sass) Variables Overrides
-// -----------------------------------------
-// Customize Quasar's colors to match Spur's branding.
+// Core Color Palette
+$primary: #4c8bf5; // Vibrant blue for primary actions and highlights
+$secondary: #1a1a2e; // Deep navy for contrast and secondary elements
+$accent: #ffb74d; // Warm orange accent for emphasis
+$background: rgba(245, 245, 245, 0.8); // Translucent light background
+$glass-overlay: rgba(255, 255, 255, 0.3); // Glassmorphic overlay effect
 
-$primary: #7575d6; // Vibrant Teal for action buttons and highlights
-$secondary: #000000; // Soft Navy for secondary elements
-$accent: #f1c40f; // Sunny Yellow for emphasis (e.g., badges)
+// Dark Mode Colors
+$dark: #121212; // Primary dark background
+$dark-overlay: rgba(18, 18, 18, 0.8); // Translucent overlay for dark mode
+$color-white: #ffffff; // Pure white for text and light mode backgrounds
+$color-black: #000000; // Pure black for text in light mode
 
-$dark: #1d1d1d; // For dark mode backgrounds
-$dark-page: #121212; // For dark mode content backgrounds
+// Status Colors
+$positive: #21e6c1; // Bright teal for positive feedback or success
+$negative: #ff5252; // Coral red for errors or negative actions
+$info: #29b6f6; // Soft blue for informational elements
+$warning: #ffa726; // Bright orange for warnings or cautions
 
-$positive: #21ac5b; // Align positive state with the primary color
-$negative: #8a0e00; // Bright Coral for errors
-$info: #3498db; // Soft Blue for informational elements
-$warning: #f1870f; // Align warning state with Sunny Yellow
-
-// Custom Variables for Spur
-$color-highlight: #e74c3c; // Bright Coral for adventurous elements
-$color-neutral-light: #ecf0f1; // Light Gray for subtle backgrounds
-$color-neutral-dark: #7f8c8d; // Medium Gray for inactive text
-$color-white: #ffffff; // White for clean, minimal look
+// Neutral Colors
+$color-neutral-light: rgba(255, 255, 255, 0.9); // Light neutral background with slight transparency
+$color-neutral-dark: rgba(0, 0, 0, 0.7); // Dark neutral overlay for shadows and borders
 
 // Typography
-$font-family-main: 'Poppins', sans-serif; // Main app font
-$font-size-base: 16px;
-$font-size-small: 14px;
-$font-size-large: 20px;
+$font-family-main: 'Poppins', sans-serif; // Modern font for all text elements
+$font-size-small: 14px; // Font size for smaller text elements
+$font-size-base: 16px; // Default font size for body text
+$font-size-large: 20px; // Font size for headings or emphasis
 
-$font-weight-light: 300;
-$font-weight-regular: 400;
-$font-weight-bold: 700;
+// Font Weights
+$font-weight-light: 300; // Thin font weight for light text
+$font-weight-regular: 400; // Regular font weight for most text
+$font-weight-bold: 700; // Bold font weight for headings or emphasis
 
-// Spacing
-$spacing-small: 8px;
-$spacing-medium: 16px;
-$spacing-large: 24px;
+// Spacing Variables
+$spacing-small: 8px; // Small spacing for padding/margin
+$spacing-medium: 16px; // Medium spacing for padding/margin
+$spacing-large: 24px; // Large spacing for padding/margin
 
-// Global Styles
-body {
-  font-family: $font-family-main;
-  background-color: $color-neutral-light;
-  color: $dark;
-}
+// Shadow and Border Styles
+$shadow-light: 0px 4px 6px rgba(0, 0, 0, 0.1); // Subtle shadow for light mode
+$shadow-medium: 0px 8px 12px rgba(0, 0, 0, 0.15);
 
-body {
-  background-color: if($dark, $dark-page, $color-neutral-light);
-  color: if($dark, $color-white, $dark);
-}
+$shadow-dark: 0px 4px 8px rgba(0, 0, 0, 0.3); // Slightly stronger shadow for dark mode
+$border-radius-small: 8px; // Small rounded corners
+$border-radius-medium: 12px; // Medium rounded corners for cards and dialogs
+$border-radius-large: 16px; // Large rounded corners for prominent components
+$border-radius-x-large: 20px;
+
+// Transparency Variables
+$opacity-light: 0.3; // Light transparency for subtle overlays
+$opacity-medium: 0.6; // Medium transparency for darker overlays
+
+// Blur Effect
+$blur-light: 8px; // Light blur for background effects
+$blur-medium: 15px; // Medium blur for glassmorphic elements
+
+// Transition Variables
+$transition-duration: 0.3s; // Standard transition duration for hover effects
+$transition-ease: ease-in-out; // Smooth transition easing
 
 // Reusable Mixins
+
+// Mixin for card shadow
 @mixin card-shadow {
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  background-color: $color-white;
+  box-shadow: $shadow-light;
+  border-radius: $border-radius-medium;
+  background-color: $background;
 }
 
+// Mixin for buttons
 @mixin button-primary {
   background-color: $primary;
   color: $color-white;
@@ -61,30 +76,136 @@ body {
   font-size: $font-size-base;
   font-weight: $font-weight-bold;
   padding: $spacing-medium;
-  border-radius: 8px;
+  border-radius: $border-radius-small;
   text-align: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition:
+    background-color $transition-duration,
+    transform 0.2s;
+
+  &:hover {
+    background-color: darken($primary, 10%);
+    transform: scale(1.02);
+  }
 }
 
+// Mixin for glass effect
+@mixin glass-effect($color, $blur: 15px, $opacity: 0.3) {
+  background: $color;
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, $opacity);
+  border-radius: $border-radius-medium;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+// Mixin for reusable card styling
 @mixin card-style {
-  @include card-shadow;
+  @include glass-effect($glass-overlay);
   padding: $spacing-medium;
   font-family: $font-family-main;
   font-size: $font-size-base;
   color: $dark;
+
+  &[data-theme='dark'] {
+    background: $dark-overlay;
+    box-shadow: $shadow-dark;
+  }
+}
+
+// Global Styles
+body {
+  font-family: $font-family-main;
+  font-size: $font-size-base;
+  background: $background;
+  color: $dark;
+
+  &[data-theme='dark'] {
+    background: $dark;
+    color: $color-white;
+  }
 }
 
 .q-btn {
   font-family: $font-family-main;
   font-weight: $font-weight-bold;
-  border-radius: 8px;
-  padding: $spacing-medium;
-  background-color: $primary;
-  color: $color-white;
+  border-radius: $border-radius-x-large;
+  padding: $spacing-small $spacing-medium;
+  text-align: center;
+  cursor: pointer;
 
-  &--secondary {
+  &.q-btn--primary {
+    background-color: $primary;
+    color: $color-white;
+
+    &:hover {
+      background-color: darken($primary, 10%);
+    }
+  }
+
+  &.q-btn--secondary {
     background-color: $secondary;
     color: $color-white;
+
+    &:hover {
+      background-color: lighten($secondary, 10%);
+    }
   }
+}
+
+.q-input {
+  border-radius: $border-radius-small;
+  background: $glass-overlay;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: $dark;
+
+  &[data-theme='dark'] {
+    background: rgba(0, 0, 0, 0.3);
+    color: $color-white;
+  }
+
+  input {
+    font-family: $font-family-main;
+    font-size: $font-size-base;
+  }
+}
+
+.q-dialog {
+  background: $background;
+  border-radius: $border-radius-large;
+  box-shadow: $shadow-light;
+  padding: $spacing-large;
+
+  &[data-theme='dark'] {
+    background: $dark-overlay;
+    box-shadow: $shadow-dark;
+  }
+}
+
+.q-carousel {
+  background: transparent;
+  border-radius: $border-radius-large;
+
+  .q-carousel-slide {
+    border-radius: $border-radius-medium;
+    overflow: hidden;
+
+    img {
+      object-fit: cover;
+      height: 100%;
+    }
+  }
+
+  &[data-theme='dark'] {
+    .q-carousel-slide {
+      background: $dark-overlay;
+    }
+  }
+}
+
+.card {
+  @include card-style;
+  padding: $spacing-medium;
 }

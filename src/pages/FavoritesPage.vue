@@ -25,7 +25,8 @@
         <q-card-actions align="right">
           <q-btn
             flat
-            label="Remove from Favorites"
+            icon="sym_o_heart_minus"
+            label="Remove"
             color="negative"
             @click="removeFromFavorites(suggestion)"
           />

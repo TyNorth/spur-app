@@ -110,7 +110,6 @@
           </div>
           <div v-if="selectedPlace.websiteUri" class="website-link q-mt-md">
             <q-btn
-              flat
               class="full-width"
               color="secondary"
               label="Visit Website"
@@ -330,6 +329,33 @@ const openGoogleMaps = async () => {
 .search-bar {
   margin-bottom: 16px;
   width: 100%;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6); // Subtle translucency
+  backdrop-filter: blur(8px); // Glassmorphic effect
+  -webkit-backdrop-filter: blur(8px); // Ensures browser support
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); // Soft shadow
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15); // Enhanced shadow on hover
+  }
+
+  .q-input {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+
+  .icon-clickable {
+    cursor: pointer;
+    color: #4c8bf5; // Material You-inspired blue
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: darken(#4c8bf5, 10%);
+    }
+  }
 }
 
 .icon-clickable {
@@ -345,9 +371,91 @@ const openGoogleMaps = async () => {
 }
 
 /* Results List */
+/* Results List */
 .results-list {
   margin-top: 8px;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; // Adds spacing between items
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6); // Glass effect
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+
+  &:hover {
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.02);
+    cursor: pointer;
+  }
+
+  .result-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-right: 16px;
+    flex-shrink: 0;
+  }
+
+  .result-details {
+    display: flex;
+    flex-direction: column;
+
+    .place-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a1a2e; // Material You deep navy
+      margin-bottom: 4px;
+    }
+
+    .place-address,
+    .place-rating {
+      font-size: 0.875rem;
+      color: #666;
+    }
+
+    .place-rating {
+      color: #ffb74d; // Accent color for ratings
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      q-icon {
+        color: #ffb74d;
+      }
+    }
+  }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  text-align: center;
+
+  q-icon {
+    color: rgba(0, 0, 0, 0.2);
+  }
+
+  p {
+    font-size: 1rem;
+    color: #999;
+  }
 }
 
 .result-item {
@@ -387,7 +495,83 @@ const openGoogleMaps = async () => {
 
 .place-details-card {
   max-width: 500px;
-  background-color: #ffffff;
+  border-radius: 16px; // Softer, modern rounded corners
+  background: rgba(255, 255, 255, 0.6); // Glassmorphic translucent white
+  backdrop-filter: blur(12px); // Enhanced blur effect
+  -webkit-backdrop-filter: blur(12px); // Ensures cross-browser support
+  border: 1px solid rgba(255, 255, 255, 0.3); // Subtle border for structure
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15); // Modern soft shadow
+  padding: 16px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-4px); // Adds a slight lift effect
+  }
+
+  /* Inner Content Styling */
+  .place-details-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .place-image {
+      width: 100px;
+      height: 100px;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-right: 16px;
+    }
+
+    .place-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a1a2e; // Deep navy for contrast
+      margin-bottom: 4px;
+    }
+
+    .place-subtitle {
+      font-size: 0.875rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      q-icon {
+        color: #4c8bf5; // Primary accent for icons
+      }
+    }
+  }
+
+  .opening-hours ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      font-size: 0.875rem;
+      color: #333;
+      margin-bottom: 4px;
+    }
+  }
+
+  .website-link {
+    margin-top: 12px;
+    text-align: center;
+
+    a,
+    .q-btn {
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #4c8bf5;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: darken(#4c8bf5, 10%);
+      }
+    }
+  }
 }
 
 .place-image {

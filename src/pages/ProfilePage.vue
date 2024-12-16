@@ -16,7 +16,7 @@
           :readonly="true"
         />
         <q-input v-model="profile.role" label="Role" filled class="q-mb-md" :readonly="true" />
-        <q-btn label="Save Changes" color="primary" @click="saveProfile" />
+        <q-btn class="full-width" label="Save Changes" color="secondary" @click="saveProfile" />
       </q-card-section>
     </q-card>
   </q-page>
@@ -105,3 +105,85 @@ onMounted(() => {
   fetchProfile()
 })
 </script>
+
+<style lang="scss">
+.profile-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: $background;
+  padding: $spacing-large;
+
+  /* Profile Card */
+  .profile-card {
+    @include card-shadow; // Consistent card styling
+    max-width: 500px;
+    width: 100%;
+    backdrop-filter: blur($blur-light);
+    -webkit-backdrop-filter: blur($blur-light);
+    transition:
+      box-shadow $transition-duration $transition-ease,
+      transform 0.3s;
+
+    &:hover {
+      box-shadow: $shadow-medium;
+      transform: translateY(-4px); // Subtle lift effect
+    }
+
+    /* Card Header */
+    .q-card-section:first-child {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      text-align: center;
+
+      .text-h6 {
+        font-family: $font-family-main;
+        font-size: $font-size-large;
+        font-weight: $font-weight-bold;
+        color: $secondary;
+      }
+    }
+
+    /* Form Inputs */
+    .q-input {
+      width: 100%;
+      margin-bottom: $spacing-medium;
+
+      .q-field__control {
+        background: $glass-overlay;
+        border-radius: $border-radius-small;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition:
+          box-shadow $transition-duration,
+          border-color $transition-duration;
+
+        &:hover {
+          border-color: $primary;
+          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        input {
+          color: $secondary;
+          font-family: $font-family-main;
+          font-size: $font-size-base;
+        }
+      }
+
+      .q-field__label {
+        font-size: $font-size-small;
+        color: $color-neutral-dark;
+      }
+
+      &[readonly] .q-field__control {
+        background: rgba(0, 0, 0, 0.05);
+        cursor: not-allowed;
+      }
+    }
+
+    /* Save Button */
+    .q-btn {
+      margin-top: $spacing-medium;
+    }
+  }
+}
+</style>

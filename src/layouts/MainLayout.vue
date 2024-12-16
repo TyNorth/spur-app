@@ -4,13 +4,13 @@
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <!-- Logo -->
-        <q-btn flat round icon="near_me" aria-label="Spur Logo" class="logo" />
+        <q-btn flat round icon="sym_o_near_me" aria-label="Spur Logo" class="logo" />
         <q-toolbar-title> Spur </q-toolbar-title>
 
         <!-- Navigation Links -->
-        <q-btn flat round icon="explore" aria-label="Discover" />
-        <q-btn flat round icon="groups" aria-label="Groups" />
-        <q-btn flat round icon="account_circle" aria-label="Profile" to="/profile" />
+        <q-btn flat round icon="sym_o_explore" aria-label="Discover" />
+        <q-btn flat round icon="sym_o_diversity_1" aria-label="Groups" />
+        <q-btn flat round icon="sym_o_account_circle" aria-label="Profile" to="/profile" />
       </q-toolbar>
     </q-header>
 
@@ -22,9 +22,9 @@
     <!-- Footer -->
     <q-footer elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn flat round icon="home" aria-label="Home" to="/home" />
-        <q-btn flat round icon="favorite" aria-label="Favorites" to="/favorites" />
-        <q-btn flat round icon="search" aria-label="Search" to="/search" />
+        <q-btn flat round icon="sym_o_home" aria-label="Home" to="/home" />
+        <q-btn flat round icon="sym_o_favorite" aria-label="Favorites" to="/favorites" />
+        <q-btn flat round icon="sym_o_search" aria-label="Search" to="/search" />
       </q-toolbar>
     </q-footer>
   </q-layout>
