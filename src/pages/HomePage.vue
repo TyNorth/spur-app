@@ -4,6 +4,11 @@
       <q-spinner size="50px" color="primary" />
     </div>
     <div v-else>
+      <!-- Mood Label -->
+      <div class="mood-label text-center text-primary">
+        {{ getMoodLabel(moodValue) }}
+      </div>
+
       <!-- Mood Slider -->
       <div class="mood-slider-container">
         <q-slider
@@ -20,82 +25,168 @@
             </div>
           </template>
         </q-slider>
+
+        <!-- Activity Label Label -->
+        <div class="mood-label text-center text-primary">
+          {{ formatString(activityType) }}
+        </div>
       </div>
 
-      <!-- Suggestion Cards -->
+      <!-- Suggestion Posts -->
       <div class="suggestions-container">
         <div v-if="filteredSuggestions.length === 0" class="no-suggestions">
-          <q-card class="fallback-card">
-            <q-card-section>
-              <div class="text-h6 text-center">No places found nearby</div>
-              <p class="text-center">
-                Try selecting another mood or adjusting your location settings.
-              </p>
-              <q-btn
-                label="Retry"
-                color="primary"
-                flat
-                @click="updateSuggestions"
-                class="retry-button"
-              />
-            </q-card-section>
-          </q-card>
+          <div class="fallback-post">
+            <div class="text-h6 text-center">No places or events found nearby</div>
+            <p class="text-center">
+              Try selecting another mood or adjusting your location settings.
+            </p>
+            <q-btn
+              label="Retry"
+              color="primary"
+              flat
+              @click="updateSuggestions"
+              class="retry-button"
+            />
+          </div>
         </div>
 
-        <q-card
+        <!-- Post Format -->
+        <div
           v-for="suggestion in filteredSuggestions"
           :key="suggestion.place_id"
-          class="suggestion-card"
+          class="suggestion-post"
         >
-          <q-img :src="suggestion.photoUrl" :alt="suggestion.name" class="card-image" />
-          <q-card-section>
-            <div class="card-title">{{ suggestion.name }}</div>
-            <div class="card-description" v-if="suggestion.businessStatus">OPEN</div>
-            <div class="card-description" v-else>{{ suggestion.businessStatus }}</div>
-          </q-card-section>
-          <q-card-actions align="right">
-            <div class="row">
-              <q-btn
-                flat
-                dense
-                class="col"
-                icon="sym_o_info"
-                aria-label="View Details"
-                color="secondary"
-                @click="navigateTo(suggestion)"
-              />
-              <q-btn
-                flat
-                class="col"
-                dense
-                icon="sym_o_heart_plus"
-                :color="favoritesStore.isFavorite(suggestion) ? 'accent' : 'secondary'"
-                aria-label="Save Suggestion"
-                @click="bookmarkSuggestion(suggestion)"
-              />
-              <q-btn
-                v-if="suggestion.nationalPhoneNumber"
-                flat
-                dense
-                class="col"
-                icon="sym_o_phone"
-                color="secondary"
-                @click="makePhoneCall"
-                aria-label="Call"
-              />
-              <!-- Navigation Button -->
-              <q-btn
-                flat
-                dense
-                class="col"
-                icon="sym_o_navigation"
-                color="secondary"
-                aria-label="Navigate to Location"
-                @click="launchMapsNavigation(suggestion)"
-              />
+          <!-- Post Header -->
+          <div class="post-header">
+            <q-avatar square>
+              <q-img :src="suggestion.photoUrl || defaultAvatar" />
+            </q-avatar>
+            <div class="post-info">
+              <div class="post-title">{{ suggestion.name }}</div>
+              <div class="post-subtitle">{{ suggestion.formattedAddress }}</div>
             </div>
-          </q-card-actions>
-        </q-card>
+          </div>
+
+          <!-- Post Image -->
+          <q-img
+            :src="suggestion.photoUrl || defaultImage"
+            :alt="suggestion.name"
+            class="post-image"
+          />
+
+          <!-- Post Actions -->
+          <div class="post-actions">
+            <q-btn
+              flat
+              icon="sym_o_info"
+              aria-label="View Details"
+              color="secondary"
+              @click="navigateTo(suggestion)"
+            />
+            <q-btn
+              flat
+              icon="sym_o_heart_plus"
+              :color="favoritesStore.isFavorite(suggestion) ? 'accent' : 'secondary'"
+              aria-label="Save Suggestion"
+              @click="bookmarkSuggestion(suggestion)"
+            />
+            <q-btn
+              v-if="suggestion?.nationalPhoneNumber"
+              flat
+              icon="sym_o_phone"
+              color="secondary"
+              @click="makePhoneCall(suggestion)"
+              aria-label="Call"
+            />
+            <q-btn
+              flat
+              icon="sym_o_navigation"
+              color="secondary"
+              aria-label="Navigate to Location"
+              @click="launchMapsNavigation(suggestion)"
+            />
+          </div>
+
+          <!-- Post Footer -->
+          <div class="post-footer">
+            <div class="post-rating" v-if="suggestion.rating">
+              Rating: {{ suggestion.rating }} ⭐
+            </div>
+            <div class="post-status">
+              {{ suggestion.businessStatus || 'Status Unavailable' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Section -->
+    <div class="events-container q-mt-lg">
+      <div v-if="loadingEvents" class="loading-container">
+        <q-spinner size="30px" color="primary" />
+      </div>
+
+      <!-- No Events Fallback -->
+      <div v-else-if="events.length === 0" class="no-events">
+        <div class="fallback-post">
+          <div class="text-h6 text-center">No events found nearby</div>
+          <p class="text-center">Try checking again later or adjusting your location settings.</p>
+        </div>
+      </div>
+
+      <!-- Event Posts -->
+      <div v-for="event in events" :key="event.id" class="event-post">
+        <!-- Post Header -->
+        <div class="post-header">
+          <q-avatar square>
+            <q-img :src="event.event_location_map.image || event.thumbnail" />
+          </q-avatar>
+          <div class="post-info">
+            <div class="post-title">{{ event.title }}</div>
+            <div class="post-subtitle">{{ event.date.when }}</div>
+          </div>
+        </div>
+
+        <!-- Post Image -->
+        <q-img :src="event.image || defaultImage" :alt="event.name" class="post-image" />
+
+        <!-- Post Actions -->
+        <div class="post-actions">
+          <q-btn
+            flat
+            icon="sym_o_info"
+            aria-label="View Details"
+            color="secondary"
+            @click="navigateToEvent(event)"
+          />
+          <q-btn
+            flat
+            icon="sym_o_calendar_today"
+            aria-label="Add to Calendar"
+            color="secondary"
+            @click="addToCalendar(event)"
+          />
+          <q-btn
+            flat
+            icon="sym_o_share"
+            aria-label="Share Event"
+            color="secondary"
+            @click="shareEvent(event)"
+          />
+          <q-btn
+            flat
+            icon="sym_o_navigation"
+            color="secondary"
+            aria-label="Navigate to Location"
+            @click="launchMapsNavigation(event)"
+          />
+        </div>
+
+        <!-- Post Footer -->
+        <div class="post-footer">
+          <div class="post-location">{{ event.venue?.name }} {{ event.venue?.rating }} ⭐</div>
+          <div class="post-status">{{ event.isFree ? 'Free Event' : 'Paid Event' }}</div>
+        </div>
       </div>
     </div>
 
@@ -107,7 +198,7 @@
       transition-show="slide-up"
       transition-hide="slide-down"
     >
-      <q-card class="q-pa-md text-secondary" style="width: 475px">
+      <q-card class="q-pa-md text-black" style="width: 475px">
         <q-card-section>
           <div class="text-h6">{{ selectedPlace?.name || 'Place Details' }}</div>
           <q-carousel
@@ -148,7 +239,7 @@
           <div v-if="selectedPlace?.websiteUri" class="q-mt-md">
             <q-btn
               class="full-width"
-              color="secondary"
+              color="primary"
               label="Visit Website"
               :href="selectedPlace.websiteUri"
               target="_blank"
@@ -186,7 +277,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useSuggestionsStore } from 'src/features/suggestions/store/useSuggestionsStore'
+import { useSuggestionsStore } from 'src/stores/useSuggestionsStore'
 import { getCurrentPosition } from 'src/features/shared/utils/geolocation'
 import { useQuasar } from 'quasar'
 import { fetchNearbySuggestions } from 'src/features/suggestions/api/fetchNearbySuggestions'
@@ -194,6 +285,8 @@ import { getActivityByMood } from 'src/features/suggestions/utils/activityTypesM
 import { useFavoritesStore } from 'src/stores/useFavoritesStore'
 import { AppLauncher } from '@capacitor/app-launcher'
 import axios from 'axios'
+import { fetchEventSuggestions } from 'src/features/events/api/fetchEventSuggestions'
+import { useEventsStore } from 'src/stores/useEventsStore'
 
 const BASE_URL = 'http://localhost:5000/api/places'
 const $q = useQuasar()
@@ -202,6 +295,7 @@ const moodValue = ref(50) // Default mood value
 const loading = ref(true) // Loading state for the page
 const suggestionsStore = useSuggestionsStore()
 const favoritesStore = useFavoritesStore()
+const eventsStore = useEventsStore()
 
 const detailsDialogVisible = ref(false) // Controls dialog visibility
 const selectedPlace = ref(null) // Holds details of the selected place
@@ -210,7 +304,36 @@ const carouselIndex = ref(0) // Tracks the current carousel index
 
 const maximizedToggle = ref(true)
 
-const makePhoneCall = async () => {
+const events = ref([]) // Stores fetched events
+const loadingEvents = ref(false) // Loading state for events
+
+const formatEventDate = (date) => {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' }
+  return new Date(date).toLocaleDateString(undefined, options)
+}
+
+// Fetch Event Suggestions
+const fetchEvents = async () => {
+  try {
+    loadingEvents.value = true
+    const location = await getCurrentPosition()
+    events.value = await fetchEventSuggestions(location, 'events') // Use the existing utility
+    console.log('Events fetched:', events.value)
+  } catch (error) {
+    console.error('Error fetching events:', error.message)
+    $q.notify({ type: 'negative', message: 'Failed to load events. Please try again.' })
+  } finally {
+    loadingEvents.value = false
+  }
+}
+
+const makePhoneCall = async (suggestion) => {
+  selectedPlace.value = {
+    nationalPhoneNumber: suggestion.nationalPhoneNumber,
+  }
+
+  console.log(selectedPlace.value)
+
   const phoneNumber = selectedPlace.value.nationalPhoneNumber
   if (!phoneNumber) {
     $q.notify({
@@ -241,11 +364,11 @@ const makePhoneCall = async () => {
 }
 // Mood ranges and labels
 const moodRanges = [
-  { min: 0, max: 29, label: 'Relaxed' },
-  { min: 30, max: 59, label: 'Focused' },
-  { min: 60, max: 79, label: 'Adventurous' },
-  { min: 80, max: 89, label: 'Excited' },
-  { min: 90, max: 100, label: 'Energetic' },
+  { min: 0, max: 20, label: 'Relaxed' },
+  { min: 21, max: 40, label: 'Focused' },
+  { min: 41, max: 60, label: 'Adventurous' },
+  { min: 61, max: 80, label: 'Excited' },
+  { min: 81, max: 100, label: 'Energetic' },
 ]
 
 // Get mood label based on slider value
@@ -256,23 +379,25 @@ const getMoodLabel = (value) => {
 
 // Filtered suggestions for UI
 const filteredSuggestions = computed(() => suggestionsStore.suggestions)
-
+const activityType = ref('')
 // Update suggestions based on mood and location
 const updateSuggestions = async () => {
   try {
     loading.value = true
     const location = await getCurrentPosition()
     const moodLabel = getMoodLabel(moodValue.value)
-    const activityType = getActivityByMood(moodLabel) // Pull only the first activity for the mood
+    activityType.value = getActivityByMood(moodLabel) // Pull only the first activity for the mood
 
-    if (!activityType) {
+    if (!activityType.value) {
       console.warn(`No activity type found for mood: ${moodLabel}`)
       return
     }
 
-    console.log(`Fetching suggestions for mood: "${moodLabel}" and activity: "${activityType}"`)
+    console.log(
+      `Fetching suggestions for mood: "${moodLabel}" and activity: "${activityType.value}"`,
+    )
 
-    const suggestions = await fetchNearbySuggestions(location, activityType)
+    const suggestions = await fetchNearbySuggestions(location, activityType.value)
     suggestionsStore.setSuggestions(suggestions)
     console.log('Suggestions fetched:', suggestions)
   } catch (error) {
@@ -281,6 +406,12 @@ const updateSuggestions = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const formatString = (input) => {
+  const words = input.split('_') // Replace underscores with spaces and split into words
+  const capitalizedWords = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
+  return capitalizedWords.join(' ') // Join the words back into a single string
 }
 
 const fetchPhotoUrl = async (photoName, maxWidth = 400, maxHeight = 400) => {
@@ -322,6 +453,7 @@ const navigateTo = async (suggestion) => {
     photoUrl: photoUrls[0], // Set first photo as main image
     photos: photoUrls.filter((url) => url), // Filter out null values
   }
+  console.log(selectedPlace.value)
   detailsDialogVisible.value = true // Open the dialog
 }
 
@@ -368,22 +500,34 @@ const openInMaps = async () => {
   }
 }
 
+const latitude = ref()
+const longitude = ref()
+const mapsUrl = ref()
+
 const launchMapsNavigation = async (suggestion) => {
-  const latitude = suggestion.location.latitude
-  const longitude = suggestion.location.longitude
-
-  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`
-
   try {
-    const { value } = await AppLauncher.canOpenUrl({ url: mapsUrl })
-    if (value) {
-      await AppLauncher.openUrl({ url: mapsUrl })
+    latitude.value = suggestion.location.latitude
+    longitude.value = suggestion.location.longitude
+
+    if (latitude.value && longitude.value) {
+      mapsUrl.value = `https://www.google.com/maps/dir/?api=1&destination=${latitude.value},${longitude.value}`
+
+      const { value } = await AppLauncher.canOpenUrl({ url: mapsUrl.value })
+      if (value) {
+        await AppLauncher.openUrl({ url: mapsUrl })
+      } else {
+        console.error('Cannot open Google Maps.')
+        $q.notify({
+          type: 'negative',
+          message: 'Unable to open Google Maps.',
+        })
+      }
     } else {
-      console.error('Cannot open Google Maps.')
-      $q.notify({
-        type: 'negative',
-        message: 'Unable to open Google Maps.',
-      })
+      /* https://maps.googleapis.com/maps/api/directions/json
+  ?destination=Montreal
+  &origin=Toronto
+  &key=YOUR_API_KEY
+  */
     }
   } catch (error) {
     console.error('Error launching Google Maps:', error)
@@ -396,6 +540,7 @@ const launchMapsNavigation = async (suggestion) => {
 // Fetch suggestions when the component is mounted
 onMounted(() => {
   updateSuggestions()
+  fetchEvents()
 })
 </script>
 
@@ -499,5 +644,71 @@ onMounted(() => {
 
 .detailsDialog {
   width: 375px;
+}
+
+.suggestions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.suggestion-post {
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #f5f5f5;
+}
+
+.post-info {
+  margin-left: 16px;
+}
+
+.post-title {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.post-subtitle {
+  font-size: 0.875rem;
+  color: gray;
+}
+
+.post-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 16px;
+  background: #f9f9f9;
+}
+
+.post-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #f5f5f5;
+}
+
+.post-rating {
+  font-size: 0.875rem;
+  color: #ff9800;
+}
+
+.post-status {
+  font-size: 0.875rem;
+  color: gray;
 }
 </style>

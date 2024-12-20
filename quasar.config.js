@@ -56,6 +56,7 @@ export default defineConfig((ctx) => {
           'sk.eyJ1Ijoic2ltZGV2MjAwMCIsImEiOiJjbTRvaGRjdXQwam4yMmtwejgzcTh5dzd5In0.ZxylTZCONXeV2K7ZPY7C7Q',
         GOOGLE_PLACES_API_KEY: 'AIzaSyBCWVS5wRGhXErOcydi1EWkbHRMF_Y89nw',
         GOOGEL_API_KEY: 'AIzaSyBCWVS5wRGhXErOcydi1EWkbHRMF_Y89nw',
+        SERPAPI_API_KEY: '1494ddd042322592544a2bf2f04e198a0e33460426a6fe8cb0f16a02a462021c',
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

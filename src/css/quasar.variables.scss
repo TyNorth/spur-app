@@ -1,7 +1,8 @@
 // Core Color Palette
-$primary: #4c8bf5; // Vibrant blue for primary actions and highlights
-$secondary: #1a1a2e; // Deep navy for contrast and secondary elements
-$accent: #ffb74d; // Warm orange accent for emphasis
+$primary: #e44c65; // Vibrant blue for primary actions and highlights
+$secondary: #90c8ac; // Deep navy for contrast and secondary elements
+$accent: #916dd5; // Warm orange accent for emphasis
+$bg: #4156a6;
 $background: rgba(245, 245, 245, 0.8); // Translucent light background
 $glass-overlay: rgba(255, 255, 255, 0.3); // Glassmorphic overlay effect
 
@@ -12,10 +13,10 @@ $color-white: #ffffff; // Pure white for text and light mode backgrounds
 $color-black: #000000; // Pure black for text in light mode
 
 // Status Colors
-$positive: #21e6c1; // Bright teal for positive feedback or success
-$negative: #ff5252; // Coral red for errors or negative actions
-$info: #29b6f6; // Soft blue for informational elements
-$warning: #ffa726; // Bright orange for warnings or cautions
+$positive: #ffc857; // Bright teal for positive feedback or success
+$negative: #d93848; // Coral red for errors or negative actions
+$info: #585f6d; // Soft blue for informational elements
+$warning: #ffaa33; // Bright orange for warnings or cautions
 
 // Neutral Colors
 $color-neutral-light: rgba(255, 255, 255, 0.9); // Light neutral background with slight transparency

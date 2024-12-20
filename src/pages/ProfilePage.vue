@@ -1,22 +1,50 @@
 <template>
   <q-page class="profile-page">
     <q-card class="profile-card">
-      <q-card-section>
-        <div class="text-h6">Your Profile</div>
+      <!-- Card Header -->
+      <q-card-section class="text-center">
+        <q-avatar size="100px" class="q-mb-md">
+          <img src="https://via.placeholder.com/100" alt="Profile Avatar" />
+        </q-avatar>
+        <div class="text-h5 text-primary">Your Profile</div>
+        <div class="text-subtitle2 text-grey">Manage your account details</div>
       </q-card-section>
 
+      <!-- Profile Form -->
       <q-card-section>
-        <q-input v-model="profile.name" label="Name" filled class="q-mb-md" />
+        <q-input
+          v-model="profile.name"
+          label="Name"
+          filled
+          class="q-mb-md input-styled"
+          dense
+          placeholder="Enter your name"
+        />
         <q-input
           v-model="profile.email"
           label="Email"
           filled
-          type="email"
-          class="q-mb-md"
-          :readonly="true"
+          dense
+          class="q-mb-md input-styled"
+          readonly
         />
-        <q-input v-model="profile.role" label="Role" filled class="q-mb-md" :readonly="true" />
-        <q-btn class="full-width" label="Save Changes" color="secondary" @click="saveProfile" />
+        <q-input
+          v-model="profile.role"
+          label="Role"
+          filled
+          dense
+          class="q-mb-md input-styled"
+          readonly
+        />
+        <q-btn
+          label="Save Changes"
+          color="primary"
+          size="md"
+          unelevated
+          class="full-width save-btn"
+          @click="saveProfile"
+          :loading="loading"
+        />
       </q-card-section>
     </q-card>
   </q-page>
@@ -140,7 +168,7 @@ onMounted(() => {
         font-family: $font-family-main;
         font-size: $font-size-large;
         font-weight: $font-weight-bold;
-        color: $secondary;
+        color: $primary;
       }
     }
 
@@ -163,7 +191,7 @@ onMounted(() => {
         }
 
         input {
-          color: $secondary;
+          color: $primary;
           font-family: $font-family-main;
           font-size: $font-size-base;
         }

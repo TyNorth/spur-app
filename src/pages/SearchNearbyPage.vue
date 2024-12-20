@@ -13,7 +13,7 @@
       :loading="loading"
     >
       <template v-slot:append>
-        <q-icon name="search" class="icon-clickable" @click="performSearch" />
+        <q-icon name="search" class="icon-clickable text-accent" @click="performSearch" />
       </template>
     </q-input>
 
@@ -34,8 +34,19 @@
     </q-list>
 
     <!-- Results Section -->
-    <div v-if="loading" class="loading-container">
-      <q-spinner size="50px" color="primary" />
+    <div v-if="loading" class="skeleton-container">
+      <!-- Skeleton loader for search results -->
+      <q-list>
+        <q-item v-for="n in 5" :key="n" class="skeleton-item">
+          <q-item-section avatar>
+            <q-skeleton type="QAvatar" />
+          </q-item-section>
+          <q-item-section>
+            <q-skeleton type="text" class="q-mb-sm" />
+            <q-skeleton type="text" width="70%" />
+          </q-item-section>
+        </q-item>
+      </q-list>
     </div>
     <div v-else>
       <q-list class="results-list">
@@ -53,7 +64,7 @@
           <q-item-section>
             <q-item-label class="place-name">{{ place.name }}</q-item-label>
             <q-item-label caption class="place-address">{{ place.formattedAddress }}</q-item-label>
-            <q-item-label caption class="place-rating" v-if="place.rating">
+            <q-item-label caption class="place-rating text-secondary" v-if="place.rating">
               Rating: {{ place.rating }} ⭐
             </q-item-label>
           </q-item-section>
@@ -111,7 +122,7 @@
           <div v-if="selectedPlace.websiteUri" class="website-link q-mt-md">
             <q-btn
               class="full-width"
-              color="secondary"
+              color="primary"
               label="Visit Website"
               :href="selectedPlace.websiteUri"
               target="_blank"
@@ -427,13 +438,13 @@ const openGoogleMaps = async () => {
     }
 
     .place-rating {
-      color: #ffb74d; // Accent color for ratings
+      color: $accent; // Accent color for ratings
       display: flex;
       align-items: center;
       gap: 4px;
 
       q-icon {
-        color: #ffb74d;
+        color: $accent;
       }
     }
   }
